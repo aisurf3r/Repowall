@@ -1,11 +1,23 @@
 /**
  * RepoWall — feed updater
- * Runs via GitHub Actions every 6 hours.
+ * Runs via GitHub Actions once a day.
  * Fetches trending repos from GitHub API, upserts into a Gist JSON.
  *
- * Required env vars (set as repo secrets):
- *   GIST_ID    — ID of your Gist (create it manually first with {"repos":[]})
+ * Required env vars (repo secrets):
+ *   GIST_ID    — ID of your Gist
  *   GIST_TOKEN — PAT with scopes: public_repo + gist
+ *
+ * Compressed field map:
+ *   n  = full_name
+ *   d  = description
+ *   u  = html_url
+ *   l  = language
+ *   s  = stargazers_count
+ *   f  = forks_count
+ *   w  = subscribers_count (real watchers)
+ *   t  = topics
+ *   p  = pushed_at
+ *   fs = first_seen (discovery date, never overwritten)
  */
 
 const GIST_ID = process.env.GIST_ID;
@@ -32,8 +44,6 @@ async function fetchRepos() {
         .then((d) => d.items ?? [])
     )
   );
-
-  // Deduplicate by id
   const seen = new Set();
   return results.flat().filter((repo) => {
     if (seen.has(repo.id)) return false;
@@ -56,7 +66,7 @@ async function saveGist(data) {
     body: JSON.stringify({
       files: {
         [GIST_FILENAME]: {
-          content: JSON.stringify(data, null, 2),
+          content: JSON.stringify(data),
         },
       },
     }),
@@ -65,30 +75,22 @@ async function saveGist(data) {
 
 function upsert(existing, fresh) {
   const map = new Map(existing.map((r) => [r.id, r]));
-
   for (const repo of fresh) {
     map.set(repo.id, {
       id: repo.id,
-      full_name: repo.full_name,
-      description: repo.description,
-      html_url: repo.html_url,
-      language: repo.language,
-      stargazers_count: repo.stargazers_count,
-      forks_count: repo.forks_count,
-      subscribers_count: repo.subscribers_count,
-      topics: repo.topics ?? [],
-      pushed_at: repo.pushed_at,
-      created_at: repo.created_at,
-      first_seen: map.has(repo.id)
-        ? map.get(repo.id).first_seen        // keep original discovery date
-        : new Date().toISOString(),           // new repo — record when we found it
+      n: repo.full_name,
+      d: repo.description,
+      u: repo.html_url,
+      l: repo.language,
+      s: repo.stargazers_count,
+      f: repo.forks_count,
+      w: repo.subscribers_count,
+      t: repo.topics ?? [],
+      p: repo.pushed_at,
+      fs: map.has(repo.id) ? map.get(repo.id).fs : new Date().toISOString(),
     });
   }
-
-  // Sort by first_seen descending (newest discoveries first)
-  return Array.from(map.values()).sort(
-    (a, b) => new Date(b.first_seen) - new Date(a.first_seen)
-  );
+  return Array.from(map.values()).sort((a, b) => new Date(b.fs) - new Date(a.fs));
 }
 
 async function main() {
