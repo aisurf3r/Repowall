@@ -69,19 +69,19 @@ function upsert(existing, fresh) {
   for (const repo of fresh) {
     map.set(repo.id, {
       id: repo.id,
-      n: repo.full_name,
-      d: repo.description,
-      u: repo.html_url,
-      l: repo.language,
-      s: repo.stargazers_count,
-      f: repo.forks_count,
-      w: repo.subscribers_count,
-      t: repo.topics ?? [],
-      p: repo.pushed_at,
-      fs: map.has(repo.id) ? map.get(repo.id).fs : new Date().toISOString(),
+      full_name: repo.full_name,
+      description: repo.description,
+      html_url: repo.html_url,
+      language: repo.language,
+      stargazers_count: repo.stargazers_count,
+      forks_count: repo.forks_count,
+      subscribers_count: repo.subscribers_count,
+      topics: repo.topics ?? [],
+      pushed_at: repo.pushed_at,
+      first_seen: map.has(repo.id) ? map.get(repo.id).first_seen : new Date().toISOString(),
     });
   }
-  return Array.from(map.values()).sort((a, b) => new Date(b.fs) - new Date(a.fs));
+  return Array.from(map.values()).sort((a, b) => new Date(b.first_seen) - new Date(a.first_seen));
 }
 
 async function main() {
