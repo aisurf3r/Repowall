@@ -1,23 +1,11 @@
 /**
  * RepoWall — feed updater
  * Runs via GitHub Actions once a day.
- * Fetches trending repos from GitHub API, upserts into a Gist JSON.
  *
- * Required env vars (repo secrets):
- *   GIST_ID    — ID of your Gist
- *   GIST_TOKEN — PAT with scopes: public_repo + gist
- *
- * Compressed field map:
- *   n  = full_name
- *   d  = description
- *   u  = html_url
- *   l  = language
- *   s  = stargazers_count
- *   f  = forks_count
- *   w  = subscribers_count (real watchers)
- *   t  = topics
- *   p  = pushed_at
- *   fs = first_seen (discovery date, never overwritten)
+ * Query strategy:
+ *   Q1 — New projects already exploding (high stars + born in 2025)
+ *   Q2 — Very new projects growing fast (moderate stars + born last 3 months)
+ *   Q3 — Active established projects with recent spike (high stars + recently pushed)
  */
 
 const GIST_ID = process.env.GIST_ID;
@@ -30,16 +18,21 @@ const headers = {
   "X-GitHub-Api-Version": "2022-11-28",
 };
 
+const today = new Date();
+const threeMonthsAgo = new Date(today);
+threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+const recentDate = threeMonthsAgo.toISOString().split("T")[0];
+
 const QUERIES = [
-  "stars:>500+pushed:>2024-01-01&sort=stars&order=desc",
-  "stars:>100+created:>2025-01-01&sort=stars&order=desc",
-  "stars:>50+created:>2025-03-01&sort=stars&order=desc",
+  `stars:>500+created:>2025-01-01&sort=stars&order=desc&per_page=30`,
+  `stars:>200+created:>${recentDate}&sort=stars&order=desc&per_page=30`,
+  `stars:>1000+pushed:>2025-04-01&sort=updated&order=desc&per_page=30`,
 ];
 
 async function fetchRepos() {
   const results = await Promise.all(
     QUERIES.map((q) =>
-      fetch(`https://api.github.com/search/repositories?q=${q}&per_page=30`, { headers })
+      fetch(`https://api.github.com/search/repositories?q=${q}`, { headers })
         .then((r) => r.json())
         .then((d) => d.items ?? [])
     )
@@ -65,9 +58,7 @@ async function saveGist(data) {
     headers: { ...headers, "Content-Type": "application/json" },
     body: JSON.stringify({
       files: {
-        [GIST_FILENAME]: {
-          content: JSON.stringify(data),
-        },
+        [GIST_FILENAME]: { content: JSON.stringify(data) },
       },
     }),
   });
