@@ -82,6 +82,7 @@ function upsert(existing, fresh) {
       subscribers_count: repo.subscribers_count,
       topics: repo.topics ?? [],
       pushed_at: repo.pushed_at,
+      created_at: repo.created_at,
       first_seen: map.has(repo.id) ? map.get(repo.id).first_seen : new Date().toISOString(),
     });
   }
