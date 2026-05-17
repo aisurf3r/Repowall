@@ -95,8 +95,12 @@ function upsert(existing, fresh) {
 
 async function main() {
   console.log("Fetching trending repos...");
-  const fresh = await fetchRepos();
-  console.log(`Fetched ${fresh.length} repos`);
+  const raw = await fetchRepos();
+  console.log(`Fetched ${raw.length} repos`);
+
+  // More forks than stars is physically impossible organically
+  const fresh = raw.filter(repo => repo.forks_count <= repo.stargazers_count);
+  console.log(`After filter: ${fresh.length} repos`);
 
   console.log("Loading Gist...");
   const current = await loadGist();
