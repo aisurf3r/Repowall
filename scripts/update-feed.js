@@ -3,9 +3,13 @@
  * Runs via GitHub Actions once a day.
  *
  * Query strategy:
- *   Q1 — New projects already exploding (high stars + born in 2025)
- *   Q2 — Very new projects growing fast (moderate stars + born last 3 months)
- *   Q3 — Active established projects with recent spike (high stars + recently pushed)
+ *   Q1 — New projects already exploding (stars >500, born in 2025)
+ *   Q2 — Recent projects with solid traction (stars >100, born last 3 months)
+ *   Q3 — Emerging projects before everyone knows them (stars 50-500, born last 3 months)
+ *
+ * Adjust thresholds based on feed quality:
+ *   Too much noise → raise minimums
+ *   Too few new repos → lower minimums or extend date range
  */
 
 const GIST_ID = process.env.GIST_ID;
@@ -25,8 +29,8 @@ const recentDate = threeMonthsAgo.toISOString().split("T")[0];
 
 const QUERIES = [
   `stars:>500+created:>2025-01-01&sort=stars&order=desc&per_page=30`,
-  `stars:>200+created:>${recentDate}&sort=stars&order=desc&per_page=30`,
-  `stars:>1000+pushed:>2025-04-01&sort=updated&order=desc&per_page=30`,
+  `stars:>100+created:>${recentDate}&sort=stars&order=desc&per_page=30`,
+  `stars:50..500+created:>${recentDate}&sort=stars&order=desc&per_page=30`,
 ];
 
 async function fetchRepos() {
