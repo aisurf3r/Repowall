@@ -3,9 +3,13 @@
  * Runs via GitHub Actions once a day.
  *
  * Query strategy:
- *   Q1 — New projects already exploding (stars >500, born in 2025)
+ *   Q1 — New projects already exploding (stars >500, born in 2025, real forks + content)
  *   Q2 — Recent projects with solid traction (stars >100, born last 3 months)
  *   Q3 — Emerging projects before everyone knows them (stars 50-500, born last 3 months)
+ *
+ * Filters applied to all queries:
+ *   forks — ensures real community interest, not just inflated stars
+ *   size  — eliminates pure README repos with no real code
  *
  * Adjust thresholds based on feed quality:
  *   Too much noise → raise minimums
@@ -28,9 +32,9 @@ threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 const recentDate = threeMonthsAgo.toISOString().split("T")[0];
 
 const QUERIES = [
-  `stars:>500+created:>2025-01-01&sort=stars&order=desc&per_page=30`,
-  `stars:>100+created:>${recentDate}&sort=stars&order=desc&per_page=30`,
-  `stars:50..500+created:>${recentDate}&sort=stars&order=desc&per_page=30`,
+  `stars:>500+created:>2025-01-01+forks:>50+size:>200&sort=stars&order=desc&per_page=30`,
+  `stars:>100+created:>${recentDate}+forks:>20+size:>200&sort=stars&order=desc&per_page=30`,
+  `stars:50..500+created:>${recentDate}+forks:>10+size:>200&sort=stars&order=desc&per_page=30`,
 ];
 
 async function fetchRepos() {
