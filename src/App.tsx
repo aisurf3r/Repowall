@@ -13,8 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-const DATA_URL =
-  "https://gist.githubusercontent.com/aisurf3r/f89f5ae8d011f4a3ced06234288d25e2/raw/repowall.json"
+const DATA_URL = import.meta.env.VITE_API_URL || ""
 
 const LANGUAGE_FILTERS = [
   "All",
@@ -51,6 +50,13 @@ export default function App() {
   const [minForks, setMinForks] = useState(0)
 
   useEffect(() => {
+    // Si por alguna razón la URL no está definida, mostramos un error controlado
+    if (!DATA_URL) {
+      setError("API URL is not defined in environment variables")
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     setError(null)
     fetch(DATA_URL)
@@ -285,14 +291,14 @@ export default function App() {
             </Dialog>
 
             <div className="ml-auto flex items-end gap-3 pl-2">
-  {data && (
-    <span
-      className="text-xs text-muted-foreground"
-      style={{ fontFamily: "Inter, sans-serif" }}
-    >
-      {filteredRepos.length} repo{filteredRepos.length !== 1 ? "s" : ""}
-    </span>
-  )}
+              {data && (
+                <span
+                  className="text-xs text-muted-foreground"
+                  style={{ fontFamily: "Inter, sans-serif" }}
+                >
+                  {filteredRepos.length} repo{filteredRepos.length !== 1 ? "s" : ""}
+                </span>
+              )}
             </div>
           </div>
         </div>
