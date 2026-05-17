@@ -98,8 +98,13 @@ async function main() {
   const raw = await fetchRepos();
   console.log(`Fetched ${raw.length} repos`);
 
-  // More forks than stars is physically impossible organically
-  const fresh = raw.filter(repo => repo.forks_count <= repo.stargazers_count);
+  // Filter out suspicious repos:
+  // - More forks than stars: physically impossible organically
+  // - Fork ratio >40%: anomalously high for any legitimate project
+  const fresh = raw.filter(repo => {
+    const ratio = repo.forks_count / repo.stargazers_count;
+    return ratio <= 0.40;
+  });
   console.log(`After filter: ${fresh.length} repos`);
 
   console.log("Loading Gist...");
