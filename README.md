@@ -11,7 +11,7 @@
 
 El ecosistema de RepoWall está dividido en dos piezas completamente independientes:
 
-### **1\. 🌐 El Pipeline de Datos (repowall-infra)**
+### **1\. 🌐 El Pipeline de Datos (Infra-Repowall)**
 
 Un flujo automatizado en **GitHub Actions** que se ejecuta **diariamente a las 08:00 UTC**.
 
@@ -100,7 +100,7 @@ Cada tarjeta en el muro interactivo despliega un set completo de señales analí
 
 ## **🚀 Configuración del Entorno e Infraestructura**
 
-### **1\. Variables del Repositorio de Infraestructura (repowall-infra)**
+### **1\. Variables del Repositorio de Infraestructura (Infra-Repowall)**
 
 Crea un repositorio para el script automatizado e inyecta las siguientes claves dentro de tus **GitHub Repository Secrets**:
 
@@ -111,9 +111,9 @@ Crea un repositorio para el script automatizado e inyecta las siguientes claves 
 
 ### **2\. Variables de Entorno del Frontend**
 
-Para enlazar la aplicación de React con los datos del Gist de manera segura sin exponer la URL privada en tus commits, configura esta variable en tu archivo .env.local de desarrollo o en el panel de variables de Vercel:
+Para enlazar la aplicación de React con los datos del Gist de manera segura sin exponer la URL privada en tus commits, configura esta variable en tu archivo .env.local de desarrollo o en el panel de variables de tu frontend hosting favorito (Vercel en mi caso):
 
-VITE\_API\_URL=\[https://gist.githubusercontent.com/\](https://gist.githubusercontent.com/){tu\_usuario}/{id\_del\_gist}/raw/repowall.json
+VITE\_API\_URL=\[https://gist.githubusercontent.com/\](https://gist.githubusercontent.com/){tu\_usuario}/{id\_del\_gist}/raw/repowall.json 
 
 ## **🛠️ Tecnologías Utilizadas**
 
@@ -135,7 +135,11 @@ VITE\_API\_URL=\[https://gist.githubusercontent.com/\](https://gist.githubuserco
 ## **📝 Licencia**
 Pensando...
 
+Hecho con ❤️ por Aisurf3r
+
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 # **🐙 RepoWall — GitHub Trending Aggregator**
 
@@ -150,7 +154,7 @@ RepoWall is a read-only public aggregator that surfaces new and viral GitHub pro
 
 RepoWall is split into two independent pieces:
 
-### **1\. 🌐 The Data Pipeline (repowall-infra)**
+### **1\. 🌐 The Data Pipeline (Infra-Repowall)**
 
 A GitHub Actions workflow that runs **once a day at 08:00 UTC**.
 
@@ -239,7 +243,7 @@ Each card displays a comprehensive set of analytical signals directly mapped fro
 
 ## **🚀 Setup & Installation**
 
-### **1\. Infrastructure Secrets (repowall-infra)**
+### **1\. Infrastructure Secrets (Infra-Repowall)**
 
 Add these to your **GitHub Repository Secrets**:
 
@@ -250,7 +254,7 @@ Add these to your **GitHub Repository Secrets**:
 
 ### **2\. Frontend Environment Variables**
 
-To link your React app securely with your data Gist without exposing it in your public repository commits, configure this variable in your .env.local or Vercel dashboard:
+To link your React app securely with your data Gist without exposing it in your public repository commits, configure this variable in your .env.local or your favourite frontend hosting dashboard (Vercel in my case):
 
 VITE\_API\_URL=\[https://gist.githubusercontent.com/\](https://gist.githubusercontent.com/){your\_username}/{gist\_id}/raw/repowall.json
 
@@ -273,3 +277,7 @@ VITE\_API\_URL=\[https://gist.githubusercontent.com/\](https://gist.githubuserco
 
 ## **📝 License**
 Thinking...
+
+Made with ❤️ by Aisurf3r
+
+
