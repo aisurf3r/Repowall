@@ -94,8 +94,14 @@ export default function App() {
     if (!data) return []
     let repos = [...data.repos]
 
-    // Sort by first_seen descending (newest first)
-    repos.sort((a, b) => new Date(b.first_seen).getTime() - new Date(a.first_seen).getTime())
+    // Velocity = stars per day since creation
+    repos.sort((a, b) => {
+      const ageA = Math.max((Date.now() - new Date(a.created_at ?? a.first_seen).getTime()) / 86400000, 1)
+      const ageB = Math.max((Date.now() - new Date(b.created_at ?? b.first_seen).getTime()) / 86400000, 1)
+      const velA = a.stargazers_count / ageA
+      const velB = b.stargazers_count / ageB
+      return velB - velA
+    })
 
     // Filter by language
     if (!selectedLangs.has("All")) {
