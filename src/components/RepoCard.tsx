@@ -1,6 +1,6 @@
 import { memo } from "react"
 import { formatDistanceToNow } from "date-fns"
-import { Star, GitFork, Eye, Clock, Zap, ExternalLink } from "lucide-react"
+import { Star, GitFork, Eye, Clock, Zap, ExternalLink, CalendarDays } from "lucide-react"
 
 export interface Repo {
   id: number
@@ -158,6 +158,14 @@ export const RepoCard = memo(({ repo, style }: RepoCardProps) => {
             Pushed {formatDistanceToNow(new Date(repo.pushed_at), { addSuffix: true })}
           </span>
         </div>
+        {repo.created_at && (
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
+            <CalendarDays className="size-3" />
+            <span style={{ fontFamily: "Inter, sans-serif" }}>
+              Created {formatDistanceToNow(new Date(repo.created_at), { addSuffix: true })}
+            </span>
+          </div>
+        )}
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
           <Zap className="size-3" />
           <span style={{ fontFamily: "Inter, sans-serif" }}>
