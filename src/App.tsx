@@ -209,7 +209,6 @@ export default function App() {
               </p>
             </div>
             <div className="flex items-center gap-3 pt-1">
-              <img src="/logorepo.png" alt="RepoWall" className="h-10 w-10 object-contain drop-shadow-lg" />
               <ModeToggle />
             </div>
           </div>
@@ -438,7 +437,6 @@ export default function App() {
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <img src="/logorepo.png" alt="RepoWall" className="h-5 w-5 object-contain opacity-60" />
               <span className="font-semibold text-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
                 RepoWall
               </span>
