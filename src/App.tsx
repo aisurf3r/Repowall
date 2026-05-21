@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { formatDistanceToNow } from "date-fns"
-import { CircleAlert as AlertCircle, RefreshCw, TrendingUp, Clock, Loader as Loader2, FileSliders as Sliders, ChevronDown } from "lucide-react"
+import { CircleAlert as AlertCircle, RefreshCw, TrendingUp, Clock, Loader as Loader2, FileSliders as Sliders, ChevronDown, Zap, Clock3 } from "lucide-react"
 import { RepoCard, type Repo } from "@/components/RepoCard"
 import { Masonry } from "@/components/Masonry"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -45,6 +45,8 @@ const AGE_OPTIONS = [
   { label: "Last year", value: 365 },
 ]
 
+type SortMode = "velocity" | "recent"
+
 interface RepoData {
   repos: Repo[]
   last_updated: string
@@ -57,8 +59,9 @@ export default function App() {
   const [selectedLangs, setSelectedLangs] = useState<Set<string>>(new Set(["All"]))
   const [minStars, setMinStars] = useState(0)
   const [minForks, setMinForks] = useState(0)
-  const [maxAgeDays, setMaxAgeDays] = useState(0) // 0 = no limit
+  const [maxAgeDays, setMaxAgeDays] = useState(0)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const [sortMode, setSortMode] = useState<SortMode>("velocity")
 
   useEffect(() => {
     if (!DATA_URL) {
@@ -66,7 +69,6 @@ export default function App() {
       setLoading(false)
       return
     }
-
     setLoading(true)
     setError(null)
     fetch(DATA_URL)
@@ -84,10 +86,9 @@ export default function App() {
       })
   }, [])
 
-  // Reset pagination when filters change
   useEffect(() => {
     setVisibleCount(PAGE_SIZE)
-  }, [selectedLangs, minStars, minForks, maxAgeDays])
+  }, [selectedLangs, minStars, minForks, maxAgeDays, sortMode])
 
   const toggleLang = (lang: string) => {
     if (lang === "All") {
@@ -109,47 +110,37 @@ export default function App() {
     if (!data) return []
     let repos = [...data.repos]
 
-    // Sort by star velocity (stars per day since creation)
-    repos.sort((a, b) => {
-      const ageA = Math.max((Date.now() - new Date(a.created_at ?? a.first_seen).getTime()) / 86400000, 1)
-      const ageB = Math.max((Date.now() - new Date(b.created_at ?? b.first_seen).getTime()) / 86400000, 1)
-      const velA = a.stargazers_count / ageA
-      const velB = b.stargazers_count / ageB
-      return velB - velA
-    })
+    if (sortMode === "velocity") {
+      repos.sort((a, b) => {
+        const ageA = Math.max((Date.now() - new Date(a.created_at ?? a.first_seen).getTime()) / 86400000, 1)
+        const ageB = Math.max((Date.now() - new Date(b.created_at ?? b.first_seen).getTime()) / 86400000, 1)
+        return (b.stargazers_count / ageB) - (a.stargazers_count / ageA)
+      })
+    } else {
+      repos.sort((a, b) => new Date(b.first_seen).getTime() - new Date(a.first_seen).getTime())
+    }
 
     if (!selectedLangs.has("All")) {
       repos = repos.filter((r) => selectedLangs.has(r.language ?? ""))
     }
-
     repos = repos.filter((r) => r.stargazers_count >= minStars)
     repos = repos.filter((r) => r.forks_count >= minForks)
-
     if (maxAgeDays > 0) {
       const cutoff = Date.now() - maxAgeDays * 86400000
       repos = repos.filter((r) => new Date(r.created_at ?? r.first_seen).getTime() >= cutoff)
     }
 
     return repos
-  }, [data, selectedLangs, minStars, minForks, maxAgeDays])
+  }, [data, selectedLangs, minStars, minForks, maxAgeDays, sortMode])
 
   const visibleRepos = filteredRepos.slice(0, visibleCount)
   const hasMore = visibleCount < filteredRepos.length
-
   const maxStars = data ? Math.max(...data.repos.map(r => r.stargazers_count), 100000) : 100000
   const maxForks = data ? Math.max(...data.repos.map(r => r.forks_count), 10000) : 10000
-
-  const activeFilterCount = [
-    minStars > 0,
-    minForks > 0,
-    maxAgeDays > 0,
-  ].filter(Boolean).length
+  const activeFilterCount = [minStars > 0, minForks > 0, maxAgeDays > 0].filter(Boolean).length
 
   return (
-    <div
-      className="min-h-screen bg-background"
-      style={{ fontFamily: "Inter, sans-serif" }}
-    >
+    <div className="min-h-screen bg-background" style={{ fontFamily: "Inter, sans-serif" }}>
       {/* Background texture */}
       <div className="pointer-events-none fixed inset-0 opacity-90">
         <div
@@ -177,7 +168,6 @@ export default function App() {
           <div className="absolute -top-20 left-1/4 h-40 w-48 rounded-full bg-chart-2/8 blur-2xl" />
           <div className="absolute -top-20 right-1/4 h-40 w-48 rounded-full bg-chart-5/8 blur-2xl" />
         </div>
-
         <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="flex items-start justify-between">
             <div>
@@ -190,32 +180,26 @@ export default function App() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="inline-block size-2 animate-pulse rounded-full bg-green-400" />
-                  <span className="text-xs text-muted-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
-                    Live
-                  </span>
+                  <span className="text-xs text-muted-foreground" style={{ fontFamily: "Inter, sans-serif" }}>Live</span>
                 </div>
               </div>
-              <h1
-                className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl"
-                style={{ fontFamily: "Inter, sans-serif" }}
-              >
-                Repo{" "}
-                <span className="bg-gradient-to-r from-primary via-chart-2 to-chart-1 bg-clip-text text-transparent">
-                  Wall
-                </span>
+              <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl" style={{ fontFamily: "Inter, sans-serif" }}>
+                Repo
+                <span className="bg-gradient-to-r from-primary via-chart-2 to-chart-1 bg-clip-text text-transparent">Wall</span>
               </h1>
               <p className="mt-2 text-base text-muted-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
                 Discover the hottest GitHub repositories — curated &amp; updated daily
               </p>
             </div>
             <div className="flex items-center gap-3 pt-1">
+              <img src="/logorepo.png" alt="RepoWall" className="h-10 w-10 object-contain drop-shadow-lg" />
               <ModeToggle />
             </div>
           </div>
         </div>
       </header>
 
-      {/* Language filter bar */}
+      {/* Filter bar */}
       <div className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center gap-2">
@@ -246,12 +230,39 @@ export default function App() {
               )
             })}
 
-            {/* Advanced filters dialog */}
+            {/* Sort toggle */}
+            <div className="ml-2 flex items-center rounded-full border border-border bg-secondary p-0.5">
+              <button
+                onClick={() => setSortMode("velocity")}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                  sortMode === "velocity"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                style={{ fontFamily: "Inter, sans-serif" }}
+              >
+                <Zap className="size-3" />
+                Velocity
+              </button>
+              <button
+                onClick={() => setSortMode("recent")}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                  sortMode === "recent"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                style={{ fontFamily: "Inter, sans-serif" }}
+              >
+                <Clock3 className="size-3" />
+                Recent
+              </button>
+            </div>
+
+            {/* Advanced filters */}
             <Dialog>
               <DialogTrigger asChild>
                 <button
                   style={{ fontFamily: "Inter, sans-serif" }}
-                  data-active={activeFilterCount > 0}
                   className={`ml-2 inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-all hover:border-primary/40 hover:bg-accent hover:text-foreground ${
                     activeFilterCount > 0
                       ? "border-primary/50 bg-primary/10 text-primary"
@@ -272,37 +283,20 @@ export default function App() {
                   <DialogTitle>Advanced Filters</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6 py-4">
-                  {/* Stars slider */}
                   <div>
                     <div className="mb-2 flex items-center justify-between">
                       <label className="text-sm font-medium text-foreground">Minimum Stars</label>
                       <span className="text-sm font-semibold text-primary">{minStars.toLocaleString()}+</span>
                     </div>
-                    <Slider
-                      value={[minStars]}
-                      onValueChange={(val) => setMinStars(val[0])}
-                      max={maxStars}
-                      step={1000}
-                      className="w-full"
-                    />
+                    <Slider value={[minStars]} onValueChange={(val) => setMinStars(val[0])} max={maxStars} step={1000} className="w-full" />
                   </div>
-
-                  {/* Forks slider */}
                   <div>
                     <div className="mb-2 flex items-center justify-between">
                       <label className="text-sm font-medium text-foreground">Minimum Forks</label>
                       <span className="text-sm font-semibold text-primary">{minForks.toLocaleString()}+</span>
                     </div>
-                    <Slider
-                      value={[minForks]}
-                      onValueChange={(val) => setMinForks(val[0])}
-                      max={maxForks}
-                      step={500}
-                      className="w-full"
-                    />
+                    <Slider value={[minForks]} onValueChange={(val) => setMinForks(val[0])} max={maxForks} step={500} className="w-full" />
                   </div>
-
-                  {/* Age filter */}
                   <div>
                     <label className="mb-2 block text-sm font-medium text-foreground">Created within</label>
                     <div className="flex flex-wrap gap-2">
@@ -322,8 +316,6 @@ export default function App() {
                       ))}
                     </div>
                   </div>
-
-                  {/* Reset */}
                   {activeFilterCount > 0 && (
                     <button
                       onClick={() => { setMinStars(0); setMinForks(0); setMaxAgeDays(0) }}
@@ -369,12 +361,8 @@ export default function App() {
             <div className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-6 py-4">
               <AlertCircle className="size-5 shrink-0 text-destructive" />
               <div>
-                <p className="font-medium text-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
-                  Failed to load repositories
-                </p>
-                <p className="text-sm text-muted-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
-                  {error}
-                </p>
+                <p className="font-medium text-foreground" style={{ fontFamily: "Inter, sans-serif" }}>Failed to load repositories</p>
+                <p className="text-sm text-muted-foreground" style={{ fontFamily: "Inter, sans-serif" }}>{error}</p>
               </div>
             </div>
             <button
@@ -393,12 +381,8 @@ export default function App() {
             <div className="rounded-full border border-border bg-secondary p-4">
               <TrendingUp className="size-8 text-muted-foreground" />
             </div>
-            <p className="font-medium text-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
-              No repositories found
-            </p>
-            <p className="text-sm text-muted-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
-              Try adjusting your filters
-            </p>
+            <p className="font-medium text-foreground" style={{ fontFamily: "Inter, sans-serif" }}>No repositories found</p>
+            <p className="text-sm text-muted-foreground" style={{ fontFamily: "Inter, sans-serif" }}>Try adjusting your filters</p>
           </div>
         )}
 
@@ -409,13 +393,9 @@ export default function App() {
               columnWidth={300}
               gap={16}
               renderItem={(repo, i) => (
-                <RepoCard
-                  repo={repo}
-                  style={{ animationDelay: `${i * 35}ms` }}
-                />
+                <RepoCard repo={repo} style={{ animationDelay: `${i * 35}ms` }} />
               )}
             />
-
             {hasMore && (
               <div className="mt-12 flex justify-center">
                 <button
@@ -437,19 +417,15 @@ export default function App() {
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
-                RepoWall
-              </span>
+              <img src="/logorepo.png" alt="RepoWall" className="h-5 w-5 object-contain opacity-60" />
+              <span className="font-semibold text-foreground" style={{ fontFamily: "Inter, sans-serif" }}>RepoWall</span>
               <span>·</span>
               <span style={{ fontFamily: "Inter, sans-serif" }}>GitHub Trending Aggregator</span>
             </div>
             {data?.last_updated && (
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
                 <Clock className="size-3" />
-                <span>
-                  Last updated{" "}
-                  {formatDistanceToNow(new Date(data.last_updated), { addSuffix: true })}
-                </span>
+                <span>Last updated {formatDistanceToNow(new Date(data.last_updated), { addSuffix: true })}</span>
               </div>
             )}
           </div>
