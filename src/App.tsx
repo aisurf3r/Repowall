@@ -416,10 +416,18 @@ export default function App() {
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground" style={{ fontFamily: "Inter, sans-serif" }}>RepoWall</span>
-              <span>·</span>
-              <span style={{ fontFamily: "Inter, sans-serif" }}>GitHub Trending Aggregator</span>
-            </div>
+  <a 
+    href="https://github.com/aisurf3r/Repowall" 
+    target="_blank" 
+    rel="noreferrer" 
+    className="font-semibold text-foreground hover:text-primary transition-colors" 
+    style={{ fontFamily: "Inter, sans-serif" }}
+  >
+    RepoWall
+  </a>
+  <span>·</span>
+  <span style={{ fontFamily: "Inter, sans-serif" }}>GitHub Trending Aggregator Made with ❤️.</span>
+</div>
             {data?.last_updated && (
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
                 <Clock className="size-3" />
