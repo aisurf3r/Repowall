@@ -45,6 +45,7 @@ const LANGUAGE_COLORS: Record<string, string> = {
 }
 
 const DEFAULT_COLOR = "oklch(0.92 0.004 264)"
+const NEW_THRESHOLD_HOURS = 48
 
 function formatNum(n: number): string {
   if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "k"
@@ -61,6 +62,8 @@ export const RepoCard = memo(({ repo, style }: RepoCardProps) => {
   const visibleTopics = topics.slice(0, 4)
   const extraTopics = topics.length - 4
   const langColor = LANGUAGE_COLORS[repo.language ?? ""] ?? DEFAULT_COLOR
+
+  const isNew = (Date.now() - new Date(repo.first_seen).getTime()) < NEW_THRESHOLD_HOURS * 3600000
 
   return (
     <div
@@ -79,6 +82,14 @@ export const RepoCard = memo(({ repo, style }: RepoCardProps) => {
           <span className="truncate">{repo.full_name}</span>
           <ExternalLink className="size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/link:opacity-100" />
         </a>
+        {isNew && (
+          <span
+            className="shrink-0 rounded-full bg-green-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-green-400"
+            style={{ fontFamily: "Inter, sans-serif" }}
+          >
+            NEW
+          </span>
+        )}
       </div>
 
       {/* Description */}
