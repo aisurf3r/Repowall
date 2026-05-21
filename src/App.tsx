@@ -328,14 +328,14 @@ export default function App() {
               </DialogContent>
             </Dialog>
 
-            <div className="ml-auto flex items-center gap-3">
-              {data && (
-                <span className="text-xs text-muted-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
-                  {visibleCount < filteredRepos.length
-                    ? `${visibleCount} of ${filteredRepos.length} repos`
-                    : `${filteredRepos.length} repo${filteredRepos.length !== 1 ? "s" : ""}`}
-                </span>
-              )}
+           <div className="w-full md:w-auto md:ml-auto flex items-center justify-end pt-2 md:pt-0 border-t border-border/40 md:border-none mt-2 md:mt-0">
+            {data && (
+            <span className="text-xs text-muted-foreground/80 font-medium" style={{ fontFamily: "Inter, sans-serif" }}>
+            {visibleCount < filteredRepos.length
+            ? `${visibleCount} of ${filteredRepos.length} repos`
+            : `${filteredRepos.length} repo${filteredRepos.length !== 1 ? "s" : ""}`}
+            </span>
+            )}
             </div>
           </div>
         </div>
