@@ -203,7 +203,7 @@ export default function App() {
         <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center gap-2">
             <span className="mr-1 text-xs font-medium text-muted-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
-              Languages:
+              Code:
             </span>
             {LANGUAGE_FILTERS.map((lang) => {
               const isActive = lang === "All" ? selectedLangs.has("All") : selectedLangs.has(lang)
