@@ -201,7 +201,7 @@ export default function App() {
       {/* Filter bar */}
       <div className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex overflow-x-auto md:flex-wrap items-center gap-2 pb-2 md:pb-0 scrollbar-none">
             <span className="mr-1 text-xs font-medium text-muted-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
               Code:
             </span>
