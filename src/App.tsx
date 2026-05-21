@@ -426,7 +426,16 @@ export default function App() {
     RepoWall
   </a>
   <span>·</span>
-  <span style={{ fontFamily: "Inter, sans-serif" }}>GitHub Trending Aggregator Made with ❤️.</span>
+  <span style={{ fontFamily: "Inter, sans-serif" }}>
+  GitHub Trending Aggregator * Made with ❤️ by{" "}
+  <a 
+    href="mailto:aisurf3r@gmail.com" 
+    className="text-foreground hover:text-primary transition-colors underline underline-offset-4"
+  >
+    Aisurf3r
+  </a>{" "}
+  *
+</span>
 </div>
             {data?.last_updated && (
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
