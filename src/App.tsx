@@ -12,19 +12,38 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
 
 const DATA_URL = import.meta.env.VITE_API_URL || ""
 const PAGE_SIZE = 50
 
-const LANGUAGE_FILTERS = [
+const PRIMARY_LANGUAGE_FILTERS = [
   "All",
   "TypeScript",
   "Python",
   "Rust",
   "Go",
   "JavaScript",
+] as const
+
+const SECONDARY_LANGUAGE_FILTERS = [
   "C++",
-  "Zig",
+  "C#",
+  "PHP",
+  "HTML",
+  "CSS",
+  "Shell",
+  "Java",
+  "Kotlin",
+  "Swift",
+  "Other",
 ] as const
 
 const LANGUAGE_COLORS: Record<string, string> = {
@@ -34,7 +53,15 @@ const LANGUAGE_COLORS: Record<string, string> = {
   Rust: "#dea584",
   Go: "#00ADD8",
   "C++": "#f34b7d",
-  Zig: "#ec915c",
+  "C#": "#9b4f96",
+  PHP: "#8892be",
+  HTML: "#e34c26",
+  CSS: "#264de4",
+  Shell: "#e8a838",
+  Java: "#b07219",
+  Kotlin: "#7f52ff",
+  Swift: "#f05138",
+  Other: "#6b7280",
 }
 
 const AGE_OPTIONS = [
@@ -121,7 +148,11 @@ export default function App() {
     }
 
     if (!selectedLangs.has("All")) {
-      repos = repos.filter((r) => selectedLangs.has(r.language ?? ""))
+      repos = repos.filter((r) => {
+        const lang = r.language ?? ""
+        if (!lang) return selectedLangs.has("Other")
+        return selectedLangs.has(lang)
+      })
     }
     repos = repos.filter((r) => r.stargazers_count >= minStars)
     repos = repos.filter((r) => r.forks_count >= minForks)
@@ -205,7 +236,7 @@ export default function App() {
             <span className="mr-1 text-xs font-medium text-muted-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
               Code:
             </span>
-            {LANGUAGE_FILTERS.map((lang) => {
+            {PRIMARY_LANGUAGE_FILTERS.map((lang) => {
               const isActive = lang === "All" ? selectedLangs.has("All") : selectedLangs.has(lang)
               return (
                 <button
@@ -228,6 +259,59 @@ export default function App() {
                 </button>
               )
             })}
+
+            {/* Secondary languages dropdown */}
+            {(() => {
+              const activeSecondary = SECONDARY_LANGUAGE_FILTERS.filter(l => selectedLangs.has(l))
+              const hasActive = activeSecondary.length > 0
+              return (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-all duration-200 ${
+                        hasActive
+                          ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                          : "border-border bg-secondary text-muted-foreground hover:border-primary/40 hover:bg-accent hover:text-foreground"
+                      }`}
+                      style={{ fontFamily: "Inter, sans-serif" }}
+                    >
+                      {hasActive ? (
+                        <span className="flex items-center gap-1">
+                          {activeSecondary.slice(0, 2).map(l => (
+                            <span key={l} className="inline-block size-2 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.7)" }} />
+                          ))}
+                          {activeSecondary.length > 2 && (
+                            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary-foreground/20 text-[9px] font-bold text-primary-foreground">
+                              +{activeSecondary.length - 2}
+                            </span>
+                          )}
+                        </span>
+                      ) : null}
+                      More
+                      <ChevronDown className="size-3 opacity-60" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" sideOffset={6} className="w-40">
+                    <DropdownMenuLabel className="text-[11px] text-muted-foreground">More languages</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {SECONDARY_LANGUAGE_FILTERS.map((lang) => (
+                      <DropdownMenuCheckboxItem
+                        key={lang}
+                        checked={selectedLangs.has(lang)}
+                        onCheckedChange={() => toggleLang(lang)}
+                        className="gap-2 text-xs"
+                      >
+                        <span
+                          className="inline-block size-2 shrink-0 rounded-full"
+                          style={{ backgroundColor: LANGUAGE_COLORS[lang] ?? "#888" }}
+                        />
+                        {lang}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )
+            })()}
 
             {/* Sort toggle */}
             <div className="ml-2 flex items-center rounded-full border border-border bg-secondary p-0.5">
