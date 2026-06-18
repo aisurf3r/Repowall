@@ -265,7 +265,7 @@ export default function App() {
               const activeSecondary = SECONDARY_LANGUAGE_FILTERS.filter(l => selectedLangs.has(l))
               const hasActive = activeSecondary.length > 0
               return (
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
                     <button
                       className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-all duration-200 ${
