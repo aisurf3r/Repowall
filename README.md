@@ -133,7 +133,7 @@ VITE\_API\_URL=\[https://gist.githubusercontent.com/\](https://gist.githubuserco
 * **Marcas de Tiempo Iniciales:** Tras la primera inicialización, todos los repositorios existentes heredarán el mismo timestamp de first\_seen. El rastreo y diferenciación cronológica empezará normalmente a partir de la segunda ejecución del script.
 
 ## **📝 Licencia**
-Pensando...
+MIT
 
 Hecho con ❤️ por Aisurf3r
 
@@ -276,7 +276,7 @@ VITE\_API\_URL=\[https://gist.githubusercontent.com/\](https://gist.githubuserco
 * **Initial Discovery Timestamps:** On the very first run, all repos will receive the same first\_seen timestamp. Timestamps will differentiate normally starting from day two.
 
 ## **📝 License**
-Thinking...
+MIT
 
 Made with ❤️ by Aisurf3r
 
