@@ -202,7 +202,7 @@ Each card displays a comprehensive set of analytical signals directly mapped fro
 
 \+---------------------------------------------------------+  
 |  🐙 username / repository-name                      🔗   | \-\> Direct link to GitHub  
-|  Beautifully detailed app description text...           | \-\> Muted if empty  
+|  Beautifully detailed app description text...            | \-\> Muted if empty  
 |                                                         |  
 |  \[● TypeScript\]                                         | \-\> Badge with official color  
 |  ⭐ 12.4k     🔀 1.2k     👁️ 342                        | \-\> Key stats (Real watchers)  
