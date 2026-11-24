@@ -20,6 +20,10 @@ const GIST_ID = process.env.GIST_ID;
 const TOKEN = process.env.GIST_TOKEN;
 const GIST_FILENAME = "repowall.json";
 
+// Tope de repos guardados en el Gist. Evita que el archivo crezca sin límite
+// y supere el umbral de 1 MB de la API de Gist.
+const MAX_REPOS = 1000;
+
 const headers = {
   Authorization: `Bearer ${TOKEN}`,
   Accept: "application/vnd.github+json",
@@ -55,21 +59,39 @@ async function fetchRepos() {
 
 async function loadGist() {
   const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, { headers });
+  if (!res.ok) throw new Error(`GET gist respondió ${res.status}`);
+
   const gist = await res.json();
-  const raw = gist.files?.[GIST_FILENAME]?.content;
-  return raw ? JSON.parse(raw) : { repos: [] };
+  const file = gist.files?.[GIST_FILENAME];
+  if (!file) return { repos: [] };
+
+  // La API recorta el contenido de archivos grandes: hay que leer raw_url
+  let text = file.content;
+  if (file.truncated) {
+    const rawRes = await fetch(file.raw_url, { headers });
+    if (!rawRes.ok) throw new Error(`raw_url respondió ${rawRes.status}`);
+    text = await rawRes.text();
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    throw new Error(`${GIST_FILENAME} inválido (${e.message}); no se escribe el Gist`);
+  }
 }
 
 async function saveGist(data) {
-  await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+  const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
     method: "PATCH",
     headers: { ...headers, "Content-Type": "application/json" },
     body: JSON.stringify({
-      files: {
-        [GIST_FILENAME]: { content: JSON.stringify(data) },
-      },
+      files: { [GIST_FILENAME]: { content: JSON.stringify(data) } },
     }),
   });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`PATCH gist respondió ${res.status}: ${body}`);
+  }
 }
 
 function upsert(existing, fresh) {
@@ -83,7 +105,6 @@ function upsert(existing, fresh) {
       language: repo.language,
       stargazers_count: repo.stargazers_count,
       forks_count: repo.forks_count,
-      subscribers_count: repo.subscribers_count,
       topics: repo.topics ?? [],
       pushed_at: repo.pushed_at,
       created_at: repo.created_at,
@@ -101,7 +122,7 @@ async function main() {
   // Filter out suspicious repos:
   // - More forks than stars: physically impossible organically
   // - Fork ratio >40%: anomalously high for any legitimate project
-  const fresh = raw.filter(repo => {
+  const fresh = raw.filter((repo) => {
     const ratio = repo.forks_count / repo.stargazers_count;
     return ratio <= 0.40;
   });
@@ -111,7 +132,7 @@ async function main() {
   const current = await loadGist();
   console.log(`Gist has ${current.repos.length} repos`);
 
-  const updated = upsert(current.repos, fresh);
+  const updated = upsert(current.repos, fresh).slice(0, MAX_REPOS);
   console.log(`After upsert: ${updated.length} repos total`);
 
   await saveGist({ repos: updated, last_updated: new Date().toISOString() });
